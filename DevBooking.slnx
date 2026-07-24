@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DevBooking.Api/DevBooking.Api.csproj" Id="782706c0-a722-4f24-a825-16673c124264" />
+  <Project Path="DevBooking.Application/DevBooking.Application.csproj" Id="0997bcf6-24f0-425f-9668-08344e26c2a9" />
+  <Project Path="DevBooking.Domain/DevBooking.Domain.csproj" Id="5e24a841-1e6f-4f7e-a7cb-5ead6de1711e" />
+  <Project Path="DevBooking.Infrastructure/DevBooking.Infrastructure.csproj" Id="876c1e20-e0d1-456b-b228-463b66f0b560" />
+</Solution>
