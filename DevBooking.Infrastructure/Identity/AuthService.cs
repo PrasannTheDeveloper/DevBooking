@@ -8,13 +8,16 @@ public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly ITokenService _tokenService;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager
+        ,ITokenService tokenService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _tokenService = tokenService;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -102,12 +105,18 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
 
+        var token = _tokenService.GenerateToken(
+            user.Id,
+            user.Email!,
+            user.FullName,
+            roles);
+
         return new AuthResponse
         {
             Success = true,
             Message = "Login successful.",
-            Token = "", // JWT will be added next
-            Expiration = null,
+            Token = token,
+            Expiration = DateTime.UtcNow.AddMinutes(60), // matches JwtSettings.ExpiryMinutes
             User = new UserDto
             {
                 Id = user.Id,

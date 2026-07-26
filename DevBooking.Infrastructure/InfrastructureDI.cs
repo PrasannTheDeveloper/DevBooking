@@ -21,6 +21,8 @@ namespace DevBooking.Infrastructure
                 .AddDefaultTokenProviders();
 
             service.AddScoped<IAuthService, AuthService>();
+            service.AddScoped<ITokenService, TokenService>();
+
             return service;
         }
     }

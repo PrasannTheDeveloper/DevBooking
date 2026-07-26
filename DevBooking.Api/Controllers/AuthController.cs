@@ -52,4 +52,18 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("admin-only")]
+    [Authorize(Roles = "Admin")]
+    public IActionResult AdminOnly()
+    {
+        return Ok("Your are an admin , Congrats.. !");
+    }
+
+    [HttpGet("client-or-freelancer")]
+    [Authorize(Roles = "Client,Freelancer")]
+    public IActionResult ClientOrFreelancer()
+    {
+        return Ok("You're either a Client or a Freelancer.");
+    }
 }
