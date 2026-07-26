@@ -101,9 +101,9 @@ dotnet run --project DevBooking.Api
 - [x] SQL Server Integration
 - [x] ASP.NET Core Identity
 - [x] User Registration
-- [ ] User Login
-- [ ] JWT Authentication
-- [ ] Role Authorization
+- [x] User Login
+- [x] JWT Authentication
+- [x] Role Authorization
 - [ ] Developer Profile
 - [ ] Booking System
 - [ ] Availability Calendar
