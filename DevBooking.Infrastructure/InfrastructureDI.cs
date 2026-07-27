@@ -1,7 +1,8 @@
-﻿
-using DevBooking.Application.Interfaces;
+﻿using DevBooking.Application.Interfaces;
 using DevBooking.Infrastructure.Identity;
 using DevBooking.Infrastructure.Persistence;
+using DevBooking.Infrastructure.Persistence.Repositories;
+using DevBooking.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +23,10 @@ namespace DevBooking.Infrastructure
 
             service.AddScoped<IAuthService, AuthService>();
             service.AddScoped<ITokenService, TokenService>();
+            service.AddScoped<IDeveloperProfileRepository, DeveloperProfileRepository>();
+            service.AddScoped<IDeveloperProfileService, DeveloperProfileService>();
+            service.AddScoped<IServiceRepository, ServiceRepository>();
+            service.AddScoped<IServiceManagementService, ServiceManagementService>();
 
             return service;
         }

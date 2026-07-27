@@ -4,6 +4,7 @@ using DevBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DevBooking.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727010923_AddDeveloperProfileAndBooking")]
+    partial class AddDeveloperProfileAndBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,149 +24,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.AvailabilitySlot", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DeveloperProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsBooked")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeveloperProfileId");
-
-                    b.ToTable("AvailabilitySlots");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Booking", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AvailabilitySlotId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DeveloperProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ServiceId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AvailabilitySlotId")
-                        .IsUnique()
-                        .HasFilter("[AvailabilitySlotId] IS NOT NULL");
-
-                    b.HasIndex("DeveloperProfileId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.DeveloperProfile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Headline")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("HourlyRate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TechStack")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeveloperProfiles");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Service", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DeveloperProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EstimatedDurationDays")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeveloperProfileId");
-
-                    b.ToTable("Services");
-                });
 
             modelBuilder.Entity("DevBooking.Infrastructure.Identity.ApplicationRole", b =>
                 {
@@ -367,51 +227,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("DevBooking.Domain.Entities.AvailabilitySlot", b =>
-                {
-                    b.HasOne("DevBooking.Domain.Entities.DeveloperProfile", "DeveloperProfile")
-                        .WithMany("AvailabilitySlots")
-                        .HasForeignKey("DeveloperProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DeveloperProfile");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Booking", b =>
-                {
-                    b.HasOne("DevBooking.Domain.Entities.AvailabilitySlot", "AvailabilitySlot")
-                        .WithOne("Booking")
-                        .HasForeignKey("DevBooking.Domain.Entities.Booking", "AvailabilitySlotId");
-
-                    b.HasOne("DevBooking.Domain.Entities.DeveloperProfile", "DeveloperProfile")
-                        .WithMany()
-                        .HasForeignKey("DeveloperProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DevBooking.Domain.Entities.Service", "Service")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ServiceId");
-
-                    b.Navigation("AvailabilitySlot");
-
-                    b.Navigation("DeveloperProfile");
-
-                    b.Navigation("Service");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Service", b =>
-                {
-                    b.HasOne("DevBooking.Domain.Entities.DeveloperProfile", "DeveloperProfile")
-                        .WithMany("Services")
-                        .HasForeignKey("DeveloperProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DeveloperProfile");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("DevBooking.Infrastructure.Identity.ApplicationRole", null)
@@ -461,23 +276,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.AvailabilitySlot", b =>
-                {
-                    b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.DeveloperProfile", b =>
-                {
-                    b.Navigation("AvailabilitySlots");
-
-                    b.Navigation("Services");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Service", b =>
-                {
-                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }
