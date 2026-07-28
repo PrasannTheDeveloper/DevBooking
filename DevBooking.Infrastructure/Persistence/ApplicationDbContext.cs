@@ -17,5 +17,15 @@ namespace DevBooking.Infrastructure.Persistence
         public DbSet<Service> Services { get; set; } = null!;
         public DbSet<AvailabilitySlot> AvailabilitySlots { get; set; } = null!;
         public DbSet<Booking> Bookings { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder); // MUST come first — Identity needs to configure its own tables
+
+            modelBuilder.Entity<AvailabilitySlot>()
+                .Property(s => s.RowVersion)
+                .IsRowVersion();
+        }
     }
+
 }

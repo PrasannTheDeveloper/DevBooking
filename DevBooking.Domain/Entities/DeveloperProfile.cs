@@ -41,6 +41,7 @@ public class AvailabilitySlot
     public bool IsBooked { get; set; } = false;
 
     public Booking? Booking { get; set; }
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 }
 public enum BookingStatus
 {

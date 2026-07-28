@@ -27,6 +27,10 @@ namespace DevBooking.Infrastructure
             service.AddScoped<IDeveloperProfileService, DeveloperProfileService>();
             service.AddScoped<IServiceRepository, ServiceRepository>();
             service.AddScoped<IServiceManagementService, ServiceManagementService>();
+            service.AddScoped<IAvailabilitySlotRepository, AvailabilitySlotRepository>();
+            service.AddScoped<IAvailabilityService, AvailabilityService>();
+            service.AddScoped<IBookingRepository, BookingRepository>();
+            service.AddScoped<IBookingService, BookingService>();
 
             return service;
         }
