@@ -104,7 +104,7 @@ dotnet run --project DevBooking.Api
 - [x] User Login
 - [x] JWT Authentication
 - [x] Role Authorization
-- [ ] Developer Profile
+- [x] Developer Profile
 - [ ] Booking System
 - [ ] Availability Calendar
 - [ ] Conflict Detection
