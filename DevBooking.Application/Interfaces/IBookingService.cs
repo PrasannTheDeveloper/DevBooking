@@ -7,4 +7,5 @@ public interface IBookingService
     Task<BookingDto> CreateBookingAsync(string clientId, CreateBookingRequest request);
     Task<List<BookingDto>> GetMyBookingsAsync(string clientId);
     Task<List<BookingDto>> GetBookingsForDeveloperAsync(int developerProfileId);
+    Task<BookingDto> UpdateBookingStatusAsync(string userId, int bookingId, string newStatus);
 }

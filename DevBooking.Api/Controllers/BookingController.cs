@@ -27,7 +27,7 @@ public class BookingController : ControllerBase
         {
             return Unauthorized();
         }
-
+        
         try
         {
             var result = await _bookingService.CreateBookingAsync(clientId, request);
@@ -60,5 +60,27 @@ public class BookingController : ControllerBase
     {
         var bookings = await _bookingService.GetBookingsForDeveloperAsync(developerProfileId);
         return Ok(bookings);
+    }
+
+    [HttpPatch("{bookingId}/status")]
+    [Authorize(Roles = "Freelancer,Client")]
+    public async Task<IActionResult> UpdateStatus(int bookingId, [FromBody] string newStatus)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var result = await _bookingService.UpdateBookingStatusAsync(userId, bookingId, newStatus);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

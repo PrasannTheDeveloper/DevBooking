@@ -1,6 +1,7 @@
 ﻿using DevBooking.Application.DTOs.Booking;
 using DevBooking.Application.Interfaces;
 using DevBooking.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DevBooking.Infrastructure.Services;
 
@@ -115,4 +116,64 @@ public class BookingService : IBookingService
             CreatedAt = booking.CreatedAt
         };
     }
+
+    public async Task<BookingDto> UpdateBookingStatusAsync(string userId, int bookingId, string newStatus)
+{
+    var booking = await _bookingRepository.GetByIdAsync(bookingId);
+
+    if (booking == null)
+    {
+        throw new InvalidOperationException("Booking not found.");
+    }
+
+    if (!Enum.TryParse<BookingStatus>(newStatus, true, out var parsedStatus))
+    {
+        throw new InvalidOperationException("Invalid status value.");
+    }
+
+    var isClient = booking.ClientId == userId;
+
+    var profile = await _profileRepository.GetByUserIdAsync(userId);
+    var isOwningFreelancer = profile != null && profile.Id == booking.DeveloperProfileId;
+
+    if (!isClient && !isOwningFreelancer)
+    {
+        throw new InvalidOperationException("You are not authorized to update this booking.");
+    }
+
+    if (isClient)
+    {
+        // Clients can only cancel, and only while still Pending
+        if (parsedStatus != BookingStatus.Cancelled)
+        {
+            throw new InvalidOperationException("Clients can only cancel a booking.");
+        }
+
+        if (booking.Status != BookingStatus.Pending)
+        {
+            throw new InvalidOperationException($"Cannot cancel a booking that is already {booking.Status}.");
+        }
+    }
+    else
+    {
+        // Freelancer — full transition rules
+        var allowedTransitions = new Dictionary<BookingStatus, BookingStatus[]>
+        {
+            [BookingStatus.Pending] = new[] { BookingStatus.Confirmed, BookingStatus.Cancelled },
+            [BookingStatus.Confirmed] = new[] { BookingStatus.Completed, BookingStatus.Cancelled },
+            [BookingStatus.Completed] = Array.Empty<BookingStatus>(),
+            [BookingStatus.Cancelled] = Array.Empty<BookingStatus>()
+        };
+
+        if (!allowedTransitions[booking.Status].Contains(parsedStatus))
+        {
+            throw new InvalidOperationException($"Cannot change status from {booking.Status} to {parsedStatus}.");
+        }
+    }
+
+    booking.Status = parsedStatus;
+    await _bookingRepository.SaveChangesAsync();
+
+    return MapToDto(booking);
+}
 }
