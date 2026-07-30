@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Scalar.AspNetCore;
 
 
@@ -43,6 +45,9 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssembly(typeof(DevBooking.Application.Validators.Auth.RegisterRequestValidator).Assembly);
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -60,6 +65,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 

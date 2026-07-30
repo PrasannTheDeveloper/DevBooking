@@ -1,7 +1,9 @@
-﻿using DevBooking.Application.DTOs.Auth;
+﻿using System.Security.Claims;
+using DevBooking.Application.DTOs.Auth;
 using DevBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace DevBooking.Api.Controllers;
 
@@ -64,5 +66,38 @@ public class AuthController : ControllerBase
     public IActionResult ClientOrFreelancer()
     {
         return Ok("You're either a Client or a Freelancer.");
+    }
+
+    [HttpPost("upload-profile-image")]
+    [Authorize]
+    public async Task<IActionResult> UploadProfileImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded.");
+        }
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType))
+        {
+            return BadRequest("Only JPG, PNG, or WEBP images are allowed.");
+        }
+
+        const long maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+        if (file.Length > maxSizeBytes)
+        {
+            return BadRequest("File size must not exceed 5MB.");
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        using var stream = file.OpenReadStream();
+        var imageUrl = await _authService.UpdateProfileImageAsync(userId, stream, file.FileName, file.ContentType);
+
+        return Ok(new { imageUrl });
     }
 }

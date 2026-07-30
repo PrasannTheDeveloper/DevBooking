@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using DevBooking.Infrastructure.Files;
 
 namespace DevBooking.Infrastructure
 {
@@ -31,7 +32,8 @@ namespace DevBooking.Infrastructure
             service.AddScoped<IAvailabilityService, AvailabilityService>();
             service.AddScoped<IBookingRepository, BookingRepository>();
             service.AddScoped<IBookingService, BookingService>();
-
+            service.AddScoped<IFileStorageService, LocalFileStorageService>();
+            
             return service;
         }
     }

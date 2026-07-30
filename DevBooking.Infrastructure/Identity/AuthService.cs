@@ -9,15 +9,18 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
+    private readonly IFileStorageService _fileStorageService;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager
-        ,ITokenService tokenService)
+        ,ITokenService tokenService
+        ,IFileStorageService fileStorageService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
+        _fileStorageService = fileStorageService;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -136,5 +139,27 @@ public class AuthService : IAuthService
             Success = true,
             Message = "Logout successful."
         };
+    }
+
+    public async Task<string> UpdateProfileImageAsync(string userId, Stream fileStream, string fileName, string contentType)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        // Delete old image if one exists, so old files don't pile up
+        if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+        {
+            await _fileStorageService.DeleteFileAsync(user.ProfileImageUrl);
+        }
+
+        var imageUrl = await _fileStorageService.UploadFileAsync(fileStream, fileName, contentType);
+
+        user.ProfileImageUrl = imageUrl;
+        await _userManager.UpdateAsync(user);
+
+        return imageUrl;
     }
 }
