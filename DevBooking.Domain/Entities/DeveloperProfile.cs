@@ -71,3 +71,25 @@ public class Booking
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
+
+public class ClientProfile
+{
+    public int Id { get; set; }
+
+    // Links to ApplicationUser.Id
+    public string UserId { get; set; } = string.Empty;
+
+    public string CompanyName { get; set; } = string.Empty;
+    public string JobTitle { get; set; } = string.Empty;
+
+    public string Bio { get; set; } = string.Empty;
+
+    public string Website { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+
+    public string ProfileImageUrl { get; set; } = string.Empty;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+}

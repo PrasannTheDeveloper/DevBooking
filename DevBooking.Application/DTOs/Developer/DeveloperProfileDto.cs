@@ -15,4 +15,5 @@ public class DeveloperProfileDto
     public decimal HourlyRate { get; set; }
     public string TechStack { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
+    public string? ProfileImageUrl { get; set; }
 }

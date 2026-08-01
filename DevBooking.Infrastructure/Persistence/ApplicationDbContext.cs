@@ -14,6 +14,7 @@ namespace DevBooking.Infrastructure.Persistence
         {
         }
         public DbSet<DeveloperProfile> DeveloperProfiles { get; set; } = null!;
+        public DbSet<ClientProfile> ClientProfiles { get; set; } = null!;
         public DbSet<Service> Services { get; set; } = null!;
         public DbSet<AvailabilitySlot> AvailabilitySlots { get; set; } = null!;
         public DbSet<Booking> Bookings { get; set; } = null!;

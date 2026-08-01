@@ -18,7 +18,6 @@ namespace DevBooking.Api.Controllers
             _profileService = profileService;
         }
 
-
         [HttpPost]
         [Authorize(Roles = "Freelancer")]
         public async Task<IActionResult> CreateProfile(CreateDeveloperProfileRequest request)

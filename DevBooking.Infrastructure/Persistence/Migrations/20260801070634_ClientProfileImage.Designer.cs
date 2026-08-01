@@ -4,6 +4,7 @@ using DevBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DevBooking.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801070634_ClientProfileImage")]
+    partial class ClientProfileImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,9 +73,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ClientProfileId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -94,57 +94,11 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[AvailabilitySlotId] IS NOT NULL");
 
-                    b.HasIndex("ClientProfileId");
-
                     b.HasIndex("DeveloperProfileId");
 
                     b.HasIndex("ServiceId");
 
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.ClientProfile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("JobTitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Website")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ClientProfiles");
                 });
 
             modelBuilder.Entity("DevBooking.Domain.Entities.DeveloperProfile", b =>
@@ -442,10 +396,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                         .WithOne("Booking")
                         .HasForeignKey("DevBooking.Domain.Entities.Booking", "AvailabilitySlotId");
 
-                    b.HasOne("DevBooking.Domain.Entities.ClientProfile", null)
-                        .WithMany("Bookings")
-                        .HasForeignKey("ClientProfileId");
-
                     b.HasOne("DevBooking.Domain.Entities.DeveloperProfile", "DeveloperProfile")
                         .WithMany()
                         .HasForeignKey("DeveloperProfileId")
@@ -528,11 +478,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DevBooking.Domain.Entities.AvailabilitySlot", b =>
                 {
                     b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.ClientProfile", b =>
-                {
-                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("DevBooking.Domain.Entities.DeveloperProfile", b =>

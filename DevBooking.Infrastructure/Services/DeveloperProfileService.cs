@@ -75,7 +75,8 @@ public class DeveloperProfileService : IDeveloperProfileService
             Bio = profile.Bio,
             HourlyRate = profile.HourlyRate,
             TechStack = profile.TechStack,
-            IsAvailable = profile.IsAvailable
+            IsAvailable = profile.IsAvailable,
+            ProfileImageUrl = user.ProfileImageUrl
         };
     }
 }
