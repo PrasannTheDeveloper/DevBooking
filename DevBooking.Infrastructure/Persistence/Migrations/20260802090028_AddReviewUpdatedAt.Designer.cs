@@ -4,6 +4,7 @@ using DevBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DevBooking.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802090028_AddReviewUpdatedAt")]
+    partial class AddReviewUpdatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,47 +186,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DeveloperProfiles");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DeveloperProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId")
-                        .IsUnique();
-
-                    b.HasIndex("DeveloperProfileId");
-
-                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("DevBooking.Domain.Entities.Service", b =>
@@ -502,25 +464,6 @@ namespace DevBooking.Infrastructure.Persistence.Migrations
                     b.Navigation("DeveloperProfile");
 
                     b.Navigation("Service");
-                });
-
-            modelBuilder.Entity("DevBooking.Domain.Entities.Review", b =>
-                {
-                    b.HasOne("DevBooking.Domain.Entities.Booking", "Booking")
-                        .WithOne()
-                        .HasForeignKey("DevBooking.Domain.Entities.Review", "BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DevBooking.Domain.Entities.DeveloperProfile", "DeveloperProfile")
-                        .WithMany()
-                        .HasForeignKey("DeveloperProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("DeveloperProfile");
                 });
 
             modelBuilder.Entity("DevBooking.Domain.Entities.Service", b =>

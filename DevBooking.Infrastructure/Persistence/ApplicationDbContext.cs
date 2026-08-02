@@ -18,14 +18,27 @@ namespace DevBooking.Infrastructure.Persistence
         public DbSet<Service> Services { get; set; } = null!;
         public DbSet<AvailabilitySlot> AvailabilitySlots { get; set; } = null!;
         public DbSet<Booking> Bookings { get; set; } = null!;
+        public DbSet<Review> Reviews { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); // MUST come first — Identity needs to configure its own tables
+            base.OnModelCreating(modelBuilder); 
 
             modelBuilder.Entity<AvailabilitySlot>()
-                .Property(s => s.RowVersion)
-                .IsRowVersion();
+                 .Property(s => s.RowVersion)
+                 .IsRowVersion();
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.DeveloperProfile)
+                .WithMany()
+                .HasForeignKey(r => r.DeveloperProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Booking)
+                .WithOne()
+                .HasForeignKey<Review>(r => r.BookingId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 

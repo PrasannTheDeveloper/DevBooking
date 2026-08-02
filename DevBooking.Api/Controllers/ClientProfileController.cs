@@ -54,5 +54,6 @@ namespace DevBooking.Api.Controllers
             var profiles = await _clientProfileService.GetAllAsync();
             return Ok(profiles);
         }
+
     }
 }

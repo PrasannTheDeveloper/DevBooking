@@ -35,6 +35,8 @@ namespace DevBooking.Infrastructure
             service.AddScoped<IFileStorageService, LocalFileStorageService>();
             service.AddScoped<IClientProfileRepository, ClientProfileRepository>();
             service.AddScoped<IClientProfileService, ClientProfileService>();
+            service.AddScoped<IReviewRepository, ReviewRepository>();
+            service.AddScoped<IReviewService, ReviewService>();
 
             return service;
         }
