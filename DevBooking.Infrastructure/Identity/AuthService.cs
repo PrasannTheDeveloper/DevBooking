@@ -146,7 +146,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("User not found.");
+            throw new DevBooking.Application.Exceptions.NotFoundException("User not found.");
         }
 
         // Delete old image if one exists, so old files don't pile up

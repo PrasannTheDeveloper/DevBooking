@@ -1,6 +1,7 @@
 ﻿using DevBooking.Application.DTOs.Review;
 using DevBooking.Application.Interfaces;
 using DevBooking.Domain.Entities;
+using DevBooking.Application.Exceptions;
 
 namespace DevBooking.Infrastructure.Services
 {
@@ -23,28 +24,28 @@ namespace DevBooking.Infrastructure.Services
 
             if (booking == null)
             {
-                throw new InvalidOperationException("Booking not found.");
+                throw new NotFoundException("Booking not found.");
             }
 
             if (booking.ClientId != clientId)
             {
-                throw new InvalidOperationException("You can only review your own bookings.");
+                throw new ForbiddenException("You can only review your own bookings.");
             }
 
             if (booking.Status != BookingStatus.Completed)
             {
-                throw new InvalidOperationException("You can only review a completed booking.");
+                throw new BusinessRuleException("You can only review a completed booking.");
             }
 
             var existingReview = await _reviewRepository.GetByBookingIdAsync(request.BookingId);
             if (existingReview != null)
             {
-                throw new InvalidOperationException("You have already reviewed this booking.");
+                throw new ConflictException("You have already reviewed this booking.");
             }
 
             if (request.Rating < 1 || request.Rating > 5)
             {
-                throw new InvalidOperationException("Rating must be between 1 and 5.");
+                throw new ValidationException("Rating must be between 1 and 5.");
             }
 
             var review = new Review
@@ -80,12 +81,12 @@ namespace DevBooking.Infrastructure.Services
 
             if (review == null)
             {
-                throw new InvalidOperationException("Review not found.");
+                throw new NotFoundException("Review not found.");
             }
 
             if (review.ClientId != clientId)
             {
-                throw new InvalidOperationException("You can only delete your own review.");
+                throw new ForbiddenException("You can only delete your own review.");
             }
 
             await _reviewRepository.DeleteAsync(review);
@@ -116,23 +117,23 @@ namespace DevBooking.Infrastructure.Services
 
             if (review == null)
             {
-                throw new InvalidOperationException("Review not found.");
+                throw new NotFoundException("Review not found.");
             }
 
             if (review.ClientId != clientId)
             {
-                throw new InvalidOperationException("You can only edit your own review.");
+                throw new ForbiddenException("You can only edit your own review.");
             }
 
             var editWindow = TimeSpan.FromDays(7);
             if (DateTime.UtcNow - review.CreatedAt > editWindow)
             {
-                throw new InvalidOperationException("Reviews can only be edited within 7 days of posting.");
+                throw new BusinessRuleException("Reviews can only be edited within 7 days of posting.");
             }
 
             if (request.Rating < 1 || request.Rating > 5)
             {
-                throw new InvalidOperationException("Rating must be between 1 and 5.");
+                throw new ValidationException("Rating must be between 1 and 5.");
             }
 
             review.Rating = request.Rating;

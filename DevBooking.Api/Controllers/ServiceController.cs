@@ -3,6 +3,7 @@ using DevBooking.Application.DTOs.Service;
 using DevBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using DevBooking.Application.Exceptions;
 
 namespace DevBooking.Api.Controllers;
 
@@ -33,9 +34,18 @@ public class ServiceController : ControllerBase
             var result = await _serviceManagementService.CreateServiceAsync(userId, request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (BaseException ex)
         {
-            return BadRequest(ex.Message);
+            return ex switch
+            {
+                NotFoundException => NotFound(ex.Message),
+                ConflictException => Conflict(ex.Message),
+                ForbiddenException => StatusCode(403, ex.Message),
+                UnauthorizedException => Unauthorized(ex.Message),
+                ValidationException => BadRequest(ex.Message),
+                BusinessRuleException => BadRequest(ex.Message),
+                _ => BadRequest(ex.Message)
+            };
         }
     }
 

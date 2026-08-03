@@ -1,6 +1,7 @@
 ﻿using DevBooking.Application.DTOs.Availability;
 using DevBooking.Application.Interfaces;
 using DevBooking.Domain.Entities;
+using DevBooking.Application.Exceptions;
 
 namespace DevBooking.Infrastructure.Services;
 
@@ -21,21 +22,21 @@ public class AvailabilityService : IAvailabilityService
     {
         if (request.EndTime <= request.StartTime)
         {
-            throw new InvalidOperationException("End time must be after start time.");
+            throw new BusinessRuleException("End time must be after start time.");
         }
 
         var profile = await _profileRepository.GetByUserIdAsync(userId);
 
         if (profile == null)
         {
-            throw new InvalidOperationException("You must create a developer profile before adding availability.");
+            throw new BusinessRuleException("You must create a developer profile before adding availability.");
         }
 
         var overlaps = await _slotRepository.HasOverlappingSlotAsync(profile.Id, request.StartTime, request.EndTime);
 
         if (overlaps)
         {
-            throw new InvalidOperationException("This slot overlaps with one of your existing slots.");
+            throw new BusinessRuleException("This slot overlaps with one of your existing slots.");
         }
 
         var slot = new AvailabilitySlot

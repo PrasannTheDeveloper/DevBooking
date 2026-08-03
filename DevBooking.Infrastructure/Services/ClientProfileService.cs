@@ -24,13 +24,13 @@ namespace DevBooking.Infrastructure.Services
             var existing = await _repository.GetByUserIdAsync(userId);
             if (existing != null)
             {
-                throw new InvalidOperationException("Client profile already exists for this user.");
+                throw new DevBooking.Application.Exceptions.ConflictException("Client profile already exists for this user.");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                throw new InvalidOperationException("User not found.");
+                throw new DevBooking.Application.Exceptions.NotFoundException("User not found.");
             }
 
             var profile = new ClientProfile

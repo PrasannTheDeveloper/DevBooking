@@ -1,6 +1,7 @@
 ﻿using DevBooking.Application.DTOs.Service;
 using DevBooking.Application.Interfaces;
 using DevBooking.Domain.Entities;
+using DevBooking.Application.Exceptions;
 
 namespace DevBooking.Infrastructure.Services;
 
@@ -23,7 +24,7 @@ public class ServiceManagementService : IServiceManagementService
 
         if (profile == null)
         {
-            throw new InvalidOperationException("You must create a developer profile before adding services.");
+            throw new BusinessRuleException("You must create a developer profile before adding services.");
         }
 
         var service = new Service

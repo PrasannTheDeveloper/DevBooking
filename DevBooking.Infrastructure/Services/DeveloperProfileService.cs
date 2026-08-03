@@ -19,12 +19,12 @@ public class DeveloperProfileService : IDeveloperProfileService
         _userManager = userManager;
     }
 
-    public async Task<DeveloperProfileDto> CreateProfileAsync(string userId, CreateDeveloperProfileRequest request)
+        public async Task<DeveloperProfileDto> CreateProfileAsync(string userId, CreateDeveloperProfileRequest request)
     {
         var existing = await _repository.GetByUserIdAsync(userId);
         if (existing != null)
         {
-            throw new InvalidOperationException("Developer profile already exists for this user.");
+            throw new DevBooking.Application.Exceptions.ConflictException("Developer profile already exists for this user.");
         }
 
         var profile = new DeveloperProfile

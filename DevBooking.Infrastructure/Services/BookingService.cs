@@ -1,4 +1,6 @@
-﻿using DevBooking.Application.DTOs.Booking;
+﻿
+using DevBooking.Application.DTOs.Booking;
+using DevBooking.Application.Exceptions;
 using DevBooking.Application.Interfaces;
 using DevBooking.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -32,13 +34,13 @@ public class BookingService : IBookingService
 
         if (hasService == hasSlot) // both true or both false — invalid either way
         {
-            throw new InvalidOperationException("Provide exactly one of ServiceId or AvailabilitySlotId, not both or neither.");
+            throw new BusinessRuleException("Provide exactly one of ServiceId or AvailabilitySlotId, not both or neither.");
         }
 
         var profile = await _profileRepository.GetByIdAsync(request.DeveloperProfileId);
         if (profile == null)
         {
-            throw new InvalidOperationException("Developer profile not found.");
+            throw new NotFoundException("Developer profile not found.");
         }
 
         var booking = new Booking
@@ -55,7 +57,7 @@ public class BookingService : IBookingService
 
             if (svc == null || svc.DeveloperProfileId != request.DeveloperProfileId || !svc.IsActive)
             {
-                throw new InvalidOperationException("Service not found or not offered by this developer.");
+                throw new BusinessRuleException("Service not found or not offered by this developer.");
             }
 
             booking.ServiceId = svc.Id;
@@ -69,12 +71,12 @@ public class BookingService : IBookingService
 
             if (slot == null || slot.DeveloperProfileId != request.DeveloperProfileId)
             {
-                throw new InvalidOperationException("Availability slot not found for this developer.");
+                throw new NotFoundException("Availability slot not found for this developer.");
             }
 
             if (slot.IsBooked)
             {
-                throw new InvalidOperationException("This slot has already been booked.");
+                throw new ConflictException("This slot has already been booked.");
             }
 
             booking.AvailabilitySlotId = slot.Id;
@@ -83,7 +85,7 @@ public class BookingService : IBookingService
 
             if (!success)
             {
-                throw new InvalidOperationException("This slot was just booked by someone else. Please pick another.");
+                throw new ConflictException("This slot was just booked by someone else. Please pick another.");
             }
         }
 
@@ -123,12 +125,12 @@ public class BookingService : IBookingService
 
     if (booking == null)
     {
-        throw new InvalidOperationException("Booking not found.");
+        throw new NotFoundException("Booking not found.");
     }
 
     if (!Enum.TryParse<BookingStatus>(newStatus, true, out var parsedStatus))
     {
-        throw new InvalidOperationException("Invalid status value.");
+        throw new BusinessRuleException("Invalid status value.");
     }
 
     var isClient = booking.ClientId == userId;
@@ -138,7 +140,7 @@ public class BookingService : IBookingService
 
     if (!isClient && !isOwningFreelancer)
     {
-        throw new InvalidOperationException("You are not authorized to update this booking.");
+        throw new UnauthorizedException("You are not authorized to update this booking.");
     }
 
     if (isClient)
@@ -146,12 +148,12 @@ public class BookingService : IBookingService
         // Clients can only cancel, and only while still Pending
         if (parsedStatus != BookingStatus.Cancelled)
         {
-            throw new InvalidOperationException("Clients can only cancel a booking.");
+            throw new UnauthorizedException("Clients can only cancel a booking.");
         }
 
         if (booking.Status != BookingStatus.Pending)
         {
-            throw new InvalidOperationException($"Cannot cancel a booking that is already {booking.Status}.");
+            throw new BusinessRuleException($"Cannot cancel a booking that is already {booking.Status}.");
         }
     }
     else
@@ -167,7 +169,7 @@ public class BookingService : IBookingService
 
         if (!allowedTransitions[booking.Status].Contains(parsedStatus))
         {
-            throw new InvalidOperationException($"Cannot change status from {booking.Status} to {parsedStatus}.");
+            throw new BusinessRuleException($"Cannot change status from {booking.Status} to {parsedStatus}.");
         }
     }
 

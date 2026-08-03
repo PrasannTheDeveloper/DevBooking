@@ -8,6 +8,7 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Scalar.AspNetCore;
+using DevBooking.Api.ExceptionHandler;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +51,9 @@ builder.Services.AddValidatorsFromAssembly(typeof(DevBooking.Application.Validat
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -63,7 +67,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();

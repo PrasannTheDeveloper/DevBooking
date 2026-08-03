@@ -3,6 +3,7 @@ using DevBooking.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using DevBooking.Application.Exceptions;
 using System.Security.Claims;
 
 namespace DevBooking.Api.Controllers
@@ -34,9 +35,18 @@ namespace DevBooking.Api.Controllers
                 var result = await _profileService.CreateProfileAsync(userId, request);
                 return Ok(result);
             }
-            catch (InvalidOperationException ex)
+            catch (BaseException ex)
             {
-                return BadRequest(ex.Message);
+                return ex switch
+                {
+                    NotFoundException => NotFound(ex.Message),
+                    ConflictException => Conflict(ex.Message),
+                    ForbiddenException => StatusCode(403, ex.Message),
+                    UnauthorizedException => Unauthorized(ex.Message),
+                    ValidationException => BadRequest(ex.Message),
+                    BusinessRuleException => BadRequest(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
             }
         }
 
