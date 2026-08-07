@@ -58,5 +58,12 @@ namespace DevBooking.Infrastructure.Persistence.Repositories
         {
             await _context.SaveChangesAsync();
         }
+        public async Task<List<string>> GetFollowerIdsAsync(string followingId, CancellationToken ct)
+        {
+            return await _context.Follows
+                .Where(f => f.FollowingId == followingId)
+                .Select(f => f.FollowerId)
+                .ToListAsync(ct);
+        }
     }
 }

@@ -13,17 +13,20 @@ public class BookingService : IBookingService
     private readonly IAvailabilitySlotRepository _slotRepository;
     private readonly IServiceRepository _serviceRepository;
     private readonly IDeveloperProfileRepository _profileRepository;
+    private readonly INotificationService _notificationService;
 
     public BookingService(
         IBookingRepository bookingRepository,
         IAvailabilitySlotRepository slotRepository,
         IServiceRepository serviceRepository,
-        IDeveloperProfileRepository profileRepository)
+        IDeveloperProfileRepository profileRepository,
+        INotificationService notificationService)
     {
         _bookingRepository = bookingRepository;
         _slotRepository = slotRepository;
         _serviceRepository = serviceRepository;
         _profileRepository = profileRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<BookingDto> CreateBookingAsync(string clientId, CreateBookingRequest request)
@@ -88,6 +91,14 @@ public class BookingService : IBookingService
                 throw new ConflictException("This slot was just booked by someone else. Please pick another.");
             }
         }
+        await _notificationService.CreateAsync(
+            profile.UserId,
+            "New booking request",
+            $"You have a new booking request (Booking #{booking.Id}).",
+            NotificationType.BookingCreated,
+            bookingId: booking.Id,
+            reviewId: null,
+            CancellationToken.None);
 
         return MapToDto(booking);
     }
@@ -118,64 +129,104 @@ public class BookingService : IBookingService
             CreatedAt = booking.CreatedAt
         };
     }
-
     public async Task<BookingDto> UpdateBookingStatusAsync(string userId, int bookingId, string newStatus)
-{
-    var booking = await _bookingRepository.GetByIdAsync(bookingId);
-
-    if (booking == null)
     {
-        throw new NotFoundException("Booking not found.");
-    }
+        var booking = await _bookingRepository.GetByIdAsync(bookingId);
 
-    if (!Enum.TryParse<BookingStatus>(newStatus, true, out var parsedStatus))
-    {
-        throw new BusinessRuleException("Invalid status value.");
-    }
-
-    var isClient = booking.ClientId == userId;
-
-    var profile = await _profileRepository.GetByUserIdAsync(userId);
-    var isOwningFreelancer = profile != null && profile.Id == booking.DeveloperProfileId;
-
-    if (!isClient && !isOwningFreelancer)
-    {
-        throw new UnauthorizedException("You are not authorized to update this booking.");
-    }
-
-    if (isClient)
-    {
-        // Clients can only cancel, and only while still Pending
-        if (parsedStatus != BookingStatus.Cancelled)
+        if (booking == null)
         {
-            throw new UnauthorizedException("Clients can only cancel a booking.");
+            throw new NotFoundException("Booking not found.");
         }
 
-        if (booking.Status != BookingStatus.Pending)
+        if (!Enum.TryParse<BookingStatus>(newStatus, true, out var parsedStatus))
         {
-            throw new BusinessRuleException($"Cannot cancel a booking that is already {booking.Status}.");
+            throw new BusinessRuleException("Invalid status value.");
         }
-    }
-    else
-    {
-        // Freelancer — full transition rules
-        var allowedTransitions = new Dictionary<BookingStatus, BookingStatus[]>
-        {
-            [BookingStatus.Pending] = new[] { BookingStatus.Confirmed, BookingStatus.Cancelled },
-            [BookingStatus.Confirmed] = new[] { BookingStatus.Completed, BookingStatus.Cancelled },
-            [BookingStatus.Completed] = Array.Empty<BookingStatus>(),
-            [BookingStatus.Cancelled] = Array.Empty<BookingStatus>()
-        };
 
-        if (!allowedTransitions[booking.Status].Contains(parsedStatus))
+        var isClient = booking.ClientId == userId;
+
+        var profile = await _profileRepository.GetByUserIdAsync(userId);
+        var isOwningFreelancer = profile != null && profile.Id == booking.DeveloperProfileId;
+
+        if (!isClient && !isOwningFreelancer)
         {
-            throw new BusinessRuleException($"Cannot change status from {booking.Status} to {parsedStatus}.");
+            throw new UnauthorizedException("You are not authorized to update this booking.");
         }
+
+        if (isClient)
+        {
+            // Clients can only cancel, and only while still Pending
+            if (parsedStatus != BookingStatus.Cancelled)
+            {
+                throw new UnauthorizedException("Clients can only cancel a booking.");
+            }
+
+            if (booking.Status != BookingStatus.Pending)
+            {
+                throw new BusinessRuleException($"Cannot cancel a booking that is already {booking.Status}.");
+            }
+        }
+        else
+        {
+            // Freelancer — full transition rules
+            var allowedTransitions = new Dictionary<BookingStatus, BookingStatus[]>
+            {
+                [BookingStatus.Pending] = new[] { BookingStatus.Confirmed, BookingStatus.Cancelled },
+                [BookingStatus.Confirmed] = new[] { BookingStatus.Completed, BookingStatus.Cancelled },
+                [BookingStatus.Completed] = Array.Empty<BookingStatus>(),
+                [BookingStatus.Cancelled] = Array.Empty<BookingStatus>()
+            };
+
+            if (!allowedTransitions[booking.Status].Contains(parsedStatus))
+            {
+                throw new BusinessRuleException($"Cannot change status from {booking.Status} to {parsedStatus}.");
+            }
+        }
+
+        // Persist the status change FIRST — notify only after it's actually saved
+        booking.Status = parsedStatus;
+        await _bookingRepository.SaveChangesAsync();
+
+        if (isClient)
+        {
+            // client cancelled -> tell the developer
+            var developerProfile = await _profileRepository.GetByIdAsync(booking.DeveloperProfileId);
+            if (developerProfile != null)
+            {
+                await _notificationService.CreateAsync(
+                    developerProfile.UserId,
+                    "Booking cancelled",
+                    $"The client cancelled Booking #{booking.Id}.",
+                    NotificationType.BookingCancelled,
+                    bookingId: booking.Id,
+                    reviewId: null,
+                    CancellationToken.None);
+            }
+        }
+        else
+        {
+            // freelancer changed status -> tell the client
+            var (title, message, type) = parsedStatus switch
+            {
+                BookingStatus.Confirmed => ("Booking confirmed", $"Your booking #{booking.Id} was confirmed.", NotificationType.BookingConfirmed),
+                BookingStatus.Cancelled => ("Booking cancelled", $"Your booking #{booking.Id} was cancelled.", NotificationType.BookingCancelled),
+                BookingStatus.Completed => ("Booking completed", $"Your booking #{booking.Id} is now complete.", NotificationType.BookingCompleted),
+                _ => (string.Empty, string.Empty, NotificationType.System)
+            };
+
+            if (!string.IsNullOrEmpty(title))
+            {
+                await _notificationService.CreateAsync(
+                    booking.ClientId,
+                    title,
+                    message,
+                    type,
+                    bookingId: booking.Id,
+                    reviewId: null,
+                    CancellationToken.None);
+            }
+        }
+
+        return MapToDto(booking);
     }
-
-    booking.Status = parsedStatus;
-    await _bookingRepository.SaveChangesAsync();
-
-    return MapToDto(booking);
-}
 }

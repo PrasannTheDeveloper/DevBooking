@@ -52,9 +52,9 @@ namespace DevBooking.Api.ExceptionHandler
                     break;
 
                 case BusinessRuleException:
-                    problemDetails.Status = StatusCodes.Status500InternalServerError;
+                    problemDetails.Status = StatusCodes.Status400BadRequest;
                     problemDetails.Title = "Business Rule Violation";
-                    break;
+                    break; ;
 
                 default:
                     problemDetails.Status = StatusCodes.Status500InternalServerError;

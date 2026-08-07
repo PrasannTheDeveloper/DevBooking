@@ -19,6 +19,8 @@ namespace DevBooking.Infrastructure.Persistence
         public DbSet<AvailabilitySlot> AvailabilitySlots { get; set; } = null!;
         public DbSet<Booking> Bookings { get; set; } = null!;
         public DbSet<Review> Reviews { get; set; } = null!;
+        public DbSet<Follow> Follows => Set<Follow>();
+        public DbSet<Notification> Notifications => Set<Notification>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

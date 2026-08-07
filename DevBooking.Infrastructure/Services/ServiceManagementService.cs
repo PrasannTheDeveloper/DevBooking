@@ -9,13 +9,16 @@ public class ServiceManagementService : IServiceManagementService
 {
     private readonly IServiceRepository _serviceRepository;
     private readonly IDeveloperProfileRepository _profileRepository;
+    private readonly INotificationService _notificationService; // 
 
     public ServiceManagementService(
         IServiceRepository serviceRepository,
-        IDeveloperProfileRepository profileRepository)
+        IDeveloperProfileRepository profileRepository,
+        INotificationService notificationService) //
     {
         _serviceRepository = serviceRepository;
         _profileRepository = profileRepository;
+        _notificationService = notificationService; //
     }
 
     public async Task<ServiceDto> CreateServiceAsync(string userId, CreateServiceRequest request)
@@ -38,6 +41,14 @@ public class ServiceManagementService : IServiceManagementService
 
         await _serviceRepository.AddAsync(service);
         await _serviceRepository.SaveChangesAsync();
+
+        // NEW — notify followers only after the service is actually saved
+        await _notificationService.NotifyFollowersAsync(
+            profile.UserId,
+            "New service available",
+            $"{profile.Headline} just added a new service: {service.Title}.",
+            NotificationType.NewAvailability,
+            CancellationToken.None);
 
         return MapToDto(service);
     }

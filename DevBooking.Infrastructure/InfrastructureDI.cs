@@ -1,13 +1,16 @@
 ﻿using DevBooking.Application.Interfaces;
+using DevBooking.Application.Services;
+using DevBooking.Domain.Entities;
+using DevBooking.Infrastructure.Files;
 using DevBooking.Infrastructure.Identity;
 using DevBooking.Infrastructure.Persistence;
 using DevBooking.Infrastructure.Persistence.Repositories;
+using DevBooking.Infrastructure.Repositories;
 using DevBooking.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using DevBooking.Infrastructure.Files;
 
 namespace DevBooking.Infrastructure
 {
@@ -37,7 +40,10 @@ namespace DevBooking.Infrastructure
             service.AddScoped<IClientProfileService, ClientProfileService>();
             service.AddScoped<IReviewRepository, ReviewRepository>();
             service.AddScoped<IReviewService, ReviewService>();
-
+            service.AddScoped<IFollowRepository, FollowRepository>();
+            service.AddScoped<IFollowService, FollowService>();
+            service.AddScoped<INotificationRepository, NotificationRepository>();
+            service.AddScoped<INotificationService, NotificationService>();
             return service;
         }
     }

@@ -9,15 +9,20 @@ namespace DevBooking.Infrastructure.Services
     {
         private readonly IReviewRepository _reviewRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly IDeveloperProfileRepository _profileRepository; // NEW
+        private readonly INotificationService _notificationService;      // NEW
 
         public ReviewService(
             IReviewRepository reviewRepository,
-            IBookingRepository bookingRepository)
+            IBookingRepository bookingRepository,
+            IDeveloperProfileRepository profileRepository,   
+            INotificationService notificationService)        
         {
             _reviewRepository = reviewRepository;
             _bookingRepository = bookingRepository;
+            _profileRepository = profileRepository;          
+            _notificationService = notificationService;       
         }
-
         public async Task<ReviewDto> CreateReviewAsync(string clientId, CreateReviewRequest request)
         {
             var booking = await _bookingRepository.GetByIdAsync(request.BookingId);
@@ -59,6 +64,20 @@ namespace DevBooking.Infrastructure.Services
 
             await _reviewRepository.AddAsync(review);
             await _reviewRepository.SaveChangesAsync();
+
+            // NEW — notify the developer, only after the review is actually saved
+            var developerProfile = await _profileRepository.GetByIdAsync(booking.DeveloperProfileId);
+            if (developerProfile != null)
+            {
+                await _notificationService.CreateAsync(
+                    developerProfile.UserId,
+                    "New review received",
+                    $"You received a {review.Rating}-star review on Booking #{booking.Id}.",
+                    NotificationType.ReviewReceived,
+                    bookingId: booking.Id,
+                    reviewId: review.Id,
+                    CancellationToken.None);
+            }
 
             return MapToDto(review);
         }
